@@ -1,0 +1,66 @@
+import { z } from "zod";
+
+export const ListContainersSchema = z.object({
+  environment_id: z.number().describe("Portainer environment ID"),
+  all: z.boolean().optional().describe("Include stopped containers"),
+});
+
+export const InspectContainerSchema = z.object({
+  environment_id: z.number().describe("Portainer environment ID"),
+  container_id: z.string().describe("Container ID or name"),
+});
+
+export const ContainerLogsSchema = z.object({
+  environment_id: z.number().describe("Portainer environment ID"),
+  container_id: z.string().describe("Container ID or name"),
+  tail: z.number().optional().describe("Number of lines (default 100, max 10000)"),
+});
+
+export const ContainerActionSchema = z.object({
+  environment_id: z.number().describe("Portainer environment ID"),
+  container_id: z.string().describe("Container ID or name"),
+  action: z.enum(["start", "stop", "restart", "kill", "remove"]).describe("Action to perform"),
+});
+
+export const ListStacksSchema = z.object({
+  environment_id: z.number().optional().describe("Filter by environment ID"),
+});
+
+export const InspectStackSchema = z.object({
+  stack_id: z.number().describe("Stack ID"),
+});
+
+export const StackActionSchema = z.object({
+  stack_id: z.number().describe("Stack ID"),
+  action: z.enum(["start", "stop", "remove"]).describe("Action to perform"),
+  environment_id: z.number().optional().describe("Required for remove action"),
+});
+
+export const CreateStackSchema = z.object({
+  environment_id: z.number().describe("Portainer environment ID"),
+  name: z.string().describe("Stack name"),
+  compose_content: z.string().describe("Docker Compose YAML content"),
+});
+
+export const EnvironmentIdSchema = z.object({
+  environment_id: z.number().describe("Portainer environment ID"),
+});
+
+export const ManageImageSchema = z.object({
+  environment_id: z.number().describe("Portainer environment ID"),
+  action: z.enum(["pull", "remove"]).describe("Action to perform"),
+  image: z.string().describe("Image name (for pull) or ID (for remove)"),
+});
+
+export const ManageVolumeSchema = z.object({
+  environment_id: z.number().describe("Portainer environment ID"),
+  action: z.enum(["create", "remove"]).describe("Action to perform"),
+  name: z.string().describe("Volume name"),
+});
+
+export const ManageNetworkSchema = z.object({
+  environment_id: z.number().describe("Portainer environment ID"),
+  action: z.enum(["create", "remove"]).describe("Action to perform"),
+  name: z.string().describe("Network name (for create) or ID (for remove)"),
+  subnet: z.string().optional().describe("CIDR subnet for create (e.g., 172.20.0.0/16)"),
+});
