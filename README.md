@@ -11,16 +11,20 @@ An MCP (Model Context Protocol) server that provides tools to interact with Port
 - **Volumes**: List, create, remove
 - **Networks**: List, create, remove
 
-## Installation
+## Quick Start (Docker)
 
 ```bash
-pnpm install
-pnpm build
+# Build the image
+docker build -t portainer-mcp .
+
+# Test it works
+docker run --rm \
+  -e PORTAINER_URL=https://portainer.example.com \
+  -e PORTAINER_API_KEY=ptr_your_key_here \
+  portainer-mcp
 ```
 
 ## Configuration
-
-Set these environment variables:
 
 | Variable | Required | Description |
 |----------|----------|-------------|
@@ -39,22 +43,26 @@ Set these environment variables:
 
 Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json`):
 
+### Docker (Recommended)
+
 ```json
 {
   "mcpServers": {
     "portainer": {
-      "command": "node",
-      "args": ["/path/to/portainer-mcp/dist/index.js"],
-      "env": {
-        "PORTAINER_URL": "https://portainer.example.com",
-        "PORTAINER_API_KEY": "ptr_your_api_key_here"
-      }
+      "command": "docker",
+      "args": [
+        "run", "-i", "--rm",
+        "-e", "PORTAINER_URL=https://portainer.example.com",
+        "-e", "PORTAINER_API_KEY=ptr_your_api_key_here",
+        "-e", "PORTAINER_WRITE_ENABLED=true",
+        "portainer-mcp"
+      ]
     }
   }
 }
 ```
 
-To enable write operations:
+### Node.js (Alternative)
 
 ```json
 {
@@ -131,6 +139,9 @@ pnpm test
 
 # Watch mode
 pnpm dev
+
+# Build Docker image
+docker build -t portainer-mcp .
 ```
 
 ## Project Structure

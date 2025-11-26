@@ -1,0 +1,12 @@
+node_modules/
+dist/
+*.log
+.DS_Store
+.git/
+.gitignore
+*.md
+docs/
+mcp-config.json
+.env
+.env.local
+src/**/*.test.ts
