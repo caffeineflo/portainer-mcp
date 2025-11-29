@@ -110,6 +110,18 @@ export const stackTools: Tool[] = [
         environment_id: { type: "number", description: "Portainer environment ID" },
         name: { type: "string", description: "Stack name" },
         compose_content: { type: "string", description: "Docker Compose YAML content" },
+        env: {
+          type: "array",
+          description: "Environment variables for the stack",
+          items: {
+            type: "object",
+            properties: {
+              name: { type: "string", description: "Variable name" },
+              value: { type: "string", description: "Variable value" },
+            },
+            required: ["name", "value"],
+          },
+        },
       },
       required: ["environment_id", "name", "compose_content"],
     },

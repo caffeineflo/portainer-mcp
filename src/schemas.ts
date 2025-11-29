@@ -40,6 +40,10 @@ export const CreateStackSchema = z.object({
   environment_id: z.number().describe("Portainer environment ID"),
   name: z.string().describe("Stack name"),
   compose_content: z.string().describe("Docker Compose YAML content"),
+  env: z.array(z.object({
+    name: z.string(),
+    value: z.string(),
+  })).optional().describe("Environment variables for the stack"),
 });
 
 export const EnvironmentIdSchema = z.object({

@@ -196,16 +196,21 @@ export class PortainerClient {
   async createStack(
     envId: number,
     name: string,
-    composeContent: string
+    composeContent: string,
+    env?: Array<{ name: string; value: string }>
   ): Promise<PortainerStack> {
     this.checkWriteEnabled();
+    const body: Record<string, unknown> = {
+      name,
+      stackFileContent: composeContent,
+    };
+    if (env && env.length > 0) {
+      body.env = env;
+    }
     return this.request<PortainerStack>(
       "POST",
       `/stacks/create/standalone/string?endpointId=${envId}`,
-      {
-        name,
-        stackFileContent: composeContent,
-      }
+      body
     );
   }
 

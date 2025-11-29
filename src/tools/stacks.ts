@@ -72,7 +72,8 @@ export async function createStack(
   const stack = await client.createStack(
     parsed.environment_id,
     parsed.name,
-    parsed.compose_content
+    parsed.compose_content,
+    parsed.env
   );
   return formatResponse({
     success: true,
