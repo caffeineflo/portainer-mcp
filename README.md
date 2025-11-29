@@ -21,14 +21,11 @@ All write operations are disabled by default and must be explicitly enabled.
 ### Docker (Recommended)
 
 ```bash
-# Build the image
-docker build -t portainer-mcp .
-
-# Test it works
+# Pull and run
 docker run --rm \
   -e PORTAINER_URL=https://portainer.example.com \
   -e PORTAINER_API_KEY=ptr_your_key_here \
-  portainer-mcp
+  ghcr.io/caffeineflo/portainer-mcp:latest
 ```
 
 ### Node.js
@@ -80,7 +77,7 @@ Add to your Claude Desktop config:
         "-e", "PORTAINER_URL=https://portainer.example.com",
         "-e", "PORTAINER_API_KEY=ptr_your_api_key_here",
         "-e", "PORTAINER_WRITE_ENABLED=true",
-        "portainer-mcp"
+        "ghcr.io/caffeineflo/portainer-mcp:latest"
       ]
     }
   }
