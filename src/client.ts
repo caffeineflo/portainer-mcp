@@ -8,6 +8,10 @@ import {
   DockerImage,
   DockerVolume,
   DockerNetwork,
+  DashboardResponse,
+  SystemInfo,
+  SystemVersion,
+  PortainerRegistry,
 } from "./types.js";
 
 export class PortainerClientError extends Error {
@@ -358,5 +362,32 @@ export class PortainerClient {
       "DELETE",
       `/endpoints/${envId}/docker/networks/${networkId}`
     );
+  }
+
+  // Dashboard
+  async getDashboard(envId: number): Promise<DashboardResponse> {
+    return this.request<DashboardResponse>(
+      "GET",
+      `/docker/${envId}/dashboard`
+    );
+  }
+
+  // System
+  async getSystemInfo(): Promise<SystemInfo> {
+    return this.request<SystemInfo>("GET", "/system/info");
+  }
+
+  async getSystemVersion(): Promise<SystemVersion> {
+    return this.request<SystemVersion>("GET", "/system/version");
+  }
+
+  // Registries
+  async getRegistries(): Promise<PortainerRegistry[]> {
+    return this.request<PortainerRegistry[]>("GET", "/registries");
+  }
+
+  // Stack by name
+  async getStackByName(name: string): Promise<PortainerStack> {
+    return this.request<PortainerStack>("GET", `/stacks/name/${encodeURIComponent(name)}`);
   }
 }

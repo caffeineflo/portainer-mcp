@@ -129,6 +129,46 @@ export interface DockerContainerStats {
   }>;
 }
 
+export interface DashboardResponse {
+  containers: {
+    running: number;
+    stopped: number;
+    healthy: number;
+    unhealthy: number;
+    total: number;
+  };
+  images: {
+    total: number;
+    size: number;
+  };
+  volumes: number;
+  networks: number;
+  stacks: number;
+  services: number;
+}
+
+export interface SystemInfo {
+  platform: string;
+  agents: number;
+  edgeAgents: number;
+}
+
+export interface SystemVersion {
+  ServerVersion: string;
+  ServerEdition: string;
+  LatestVersion: string;
+  UpdateAvailable: boolean;
+}
+
+export interface PortainerRegistry {
+  Id: number;
+  Name: string;
+  URL: string;
+  Type: number;
+  Authentication: boolean;
+  BaseURL?: string;
+}
+
 export interface PortainerError {
   message: string;
   details?: string;

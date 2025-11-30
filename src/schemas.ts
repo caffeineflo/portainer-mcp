@@ -69,6 +69,10 @@ export const ContainerStatsSchema = z.object({
   container_id: z.string().describe("Container ID or name"),
 });
 
+export const StackByNameSchema = z.object({
+  name: z.string().describe("Stack name"),
+});
+
 export const EnvironmentIdSchema = z.object({
   environment_id: z.number().describe("Portainer environment ID"),
 });

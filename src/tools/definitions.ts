@@ -10,6 +10,17 @@ export const environmentTools: Tool[] = [
       required: [],
     },
   },
+  {
+    name: "environment_dashboard",
+    description: "Get dashboard overview for an environment (container counts, image stats, etc)",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        environment_id: { type: "number", description: "Portainer environment ID" },
+      },
+      required: ["environment_id"],
+    },
+  },
 ];
 
 export const containerTools: Tool[] = [
@@ -178,6 +189,17 @@ export const stackTools: Tool[] = [
       required: ["stack_id", "environment_id"],
     },
   },
+  {
+    name: "get_stack_by_name",
+    description: "Get a stack by its name instead of ID",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        name: { type: "string", description: "Stack name" },
+      },
+      required: ["name"],
+    },
+  },
 ];
 
 export const imageTools: Tool[] = [
@@ -262,6 +284,27 @@ export const networkTools: Tool[] = [
   },
 ];
 
+export const systemTools: Tool[] = [
+  {
+    name: "system_info",
+    description: "Get Portainer system info (version, platform, agent counts)",
+    inputSchema: {
+      type: "object" as const,
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: "list_registries",
+    description: "List configured Docker registries",
+    inputSchema: {
+      type: "object" as const,
+      properties: {},
+      required: [],
+    },
+  },
+];
+
 export const allTools: Tool[] = [
   ...environmentTools,
   ...containerTools,
@@ -269,4 +312,5 @@ export const allTools: Tool[] = [
   ...imageTools,
   ...volumeTools,
   ...networkTools,
+  ...systemTools,
 ];

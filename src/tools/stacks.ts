@@ -6,6 +6,7 @@ import {
   CreateStackSchema,
   UpdateStackSchema,
   RedeployStackSchema,
+  StackByNameSchema,
 } from "../schemas.js";
 import { formatResponse, type ToolResponse } from "./utils.js";
 
@@ -118,5 +119,21 @@ export async function redeployStack(
   return formatResponse({
     success: true,
     message: "Stack redeployed from git repository",
+  });
+}
+
+export async function getStackByName(
+  client: PortainerClient,
+  args: unknown
+): Promise<ToolResponse> {
+  const parsed = StackByNameSchema.parse(args);
+  const stack = await client.getStackByName(parsed.name);
+  return formatResponse({
+    id: stack.Id,
+    name: stack.Name,
+    status: stack.Status === 1 ? "active" : "inactive",
+    environment_id: stack.EndpointId,
+    env: stack.Env || [],
+    git_config: stack.GitConfig || null,
   });
 }

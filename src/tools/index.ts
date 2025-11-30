@@ -3,7 +3,7 @@ import { allTools } from "./definitions.js";
 import { formatError, type ToolResponse } from "./utils.js";
 
 // Environment handlers
-import { listEnvironments } from "./environments.js";
+import { listEnvironments, environmentDashboard } from "./environments.js";
 
 // Container handlers
 import {
@@ -22,6 +22,7 @@ import {
   createStack,
   updateStack,
   redeployStack,
+  getStackByName,
 } from "./stacks.js";
 
 // Image handlers
@@ -32,6 +33,9 @@ import { listVolumes, manageVolume } from "./volumes.js";
 
 // Network handlers
 import { listNetworks, manageNetwork } from "./networks.js";
+
+// System handlers
+import { systemInfo, listRegistries } from "./system.js";
 
 export { allTools };
 export { formatError, type ToolResponse };
@@ -44,6 +48,7 @@ export type ToolHandler = (
 const toolHandlers: Record<string, ToolHandler> = {
   // Environments
   list_environments: (client) => listEnvironments(client),
+  environment_dashboard: environmentDashboard,
 
   // Containers
   list_containers: listContainers,
@@ -59,6 +64,7 @@ const toolHandlers: Record<string, ToolHandler> = {
   create_stack: createStack,
   update_stack: updateStack,
   redeploy_stack: redeployStack,
+  get_stack_by_name: getStackByName,
 
   // Images
   list_images: listImages,
@@ -71,6 +77,10 @@ const toolHandlers: Record<string, ToolHandler> = {
   // Networks
   list_networks: listNetworks,
   manage_network: manageNetwork,
+
+  // System
+  system_info: (client) => systemInfo(client),
+  list_registries: (client) => listRegistries(client),
 };
 
 export async function handleToolCall(
