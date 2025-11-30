@@ -11,6 +11,7 @@ import {
   inspectContainer,
   containerLogs,
   containerAction,
+  containerStats,
 } from "./containers.js";
 
 // Stack handlers
@@ -19,6 +20,8 @@ import {
   inspectStack,
   stackAction,
   createStack,
+  updateStack,
+  redeployStack,
 } from "./stacks.js";
 
 // Image handlers
@@ -47,12 +50,15 @@ const toolHandlers: Record<string, ToolHandler> = {
   inspect_container: inspectContainer,
   container_logs: containerLogs,
   container_action: containerAction,
+  container_stats: containerStats,
 
   // Stacks
   list_stacks: listStacks,
   inspect_stack: inspectStack,
   stack_action: stackAction,
   create_stack: createStack,
+  update_stack: updateStack,
+  redeploy_stack: redeployStack,
 
   // Images
   list_images: listImages,

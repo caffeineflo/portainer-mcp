@@ -2,6 +2,7 @@ import {
   PortainerEnvironment,
   DockerContainer,
   DockerContainerInspect,
+  DockerContainerStats,
   PortainerStack,
   PortainerStackFile,
   DockerImage,
@@ -172,6 +173,16 @@ export class PortainerClient {
     }
   }
 
+  async getContainerStats(
+    envId: number,
+    containerId: string
+  ): Promise<DockerContainerStats> {
+    return this.request<DockerContainerStats>(
+      "GET",
+      `/endpoints/${envId}/docker/containers/${containerId}/stats?stream=false`
+    );
+  }
+
   // Stacks
   async getStacks(): Promise<PortainerStack[]> {
     return this.request<PortainerStack[]>("GET", "/stacks");
@@ -211,6 +222,50 @@ export class PortainerClient {
       "POST",
       `/stacks/create/standalone/string?endpointId=${envId}`,
       body
+    );
+  }
+
+  async updateStack(
+    stackId: number,
+    envId: number,
+    options: {
+      composeContent?: string;
+      env?: Array<{ name: string; value: string }>;
+      prune?: boolean;
+      pullImage?: boolean;
+    }
+  ): Promise<PortainerStack> {
+    this.checkWriteEnabled();
+    const body: Record<string, unknown> = {};
+    if (options.composeContent !== undefined) {
+      body.stackFileContent = options.composeContent;
+    }
+    if (options.env !== undefined) {
+      body.env = options.env;
+    }
+    if (options.prune !== undefined) {
+      body.prune = options.prune;
+    }
+    if (options.pullImage !== undefined) {
+      body.pullImage = options.pullImage;
+    }
+    return this.request<PortainerStack>(
+      "PUT",
+      `/stacks/${stackId}?endpointId=${envId}`,
+      body
+    );
+  }
+
+  async redeployStack(
+    stackId: number,
+    envId: number,
+    pullImage = false
+  ): Promise<void> {
+    this.checkWriteEnabled();
+    await this.request<void>(
+      "PUT",
+      `/stacks/${stackId}/git/redeploy?endpointId=${envId}`,
+      { pullImage }
     );
   }
 

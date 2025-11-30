@@ -4,6 +4,8 @@ import {
   InspectStackSchema,
   StackActionSchema,
   CreateStackSchema,
+  UpdateStackSchema,
+  RedeployStackSchema,
 } from "../schemas.js";
 import { formatResponse, type ToolResponse } from "./utils.js";
 
@@ -41,6 +43,8 @@ export async function inspectStack(
     name: stack.Name,
     status: stack.Status === 1 ? "active" : "inactive",
     environment_id: stack.EndpointId,
+    env: stack.Env || [],
+    git_config: stack.GitConfig || null,
     compose_content: stackFile.StackFileContent,
   });
 }
@@ -79,5 +83,40 @@ export async function createStack(
     success: true,
     id: stack.Id,
     name: stack.Name,
+  });
+}
+
+export async function updateStack(
+  client: PortainerClient,
+  args: unknown
+): Promise<ToolResponse> {
+  const parsed = UpdateStackSchema.parse(args);
+  const stack = await client.updateStack(parsed.stack_id, parsed.environment_id, {
+    composeContent: parsed.compose_content,
+    env: parsed.env,
+    prune: parsed.prune,
+    pullImage: parsed.pull_image,
+  });
+  return formatResponse({
+    success: true,
+    id: stack.Id,
+    name: stack.Name,
+    message: "Stack updated successfully",
+  });
+}
+
+export async function redeployStack(
+  client: PortainerClient,
+  args: unknown
+): Promise<ToolResponse> {
+  const parsed = RedeployStackSchema.parse(args);
+  await client.redeployStack(
+    parsed.stack_id,
+    parsed.environment_id,
+    parsed.pull_image ?? false
+  );
+  return formatResponse({
+    success: true,
+    message: "Stack redeployed from git repository",
   });
 }

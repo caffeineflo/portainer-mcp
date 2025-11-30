@@ -46,6 +46,29 @@ export const CreateStackSchema = z.object({
   })).optional().describe("Environment variables for the stack"),
 });
 
+export const UpdateStackSchema = z.object({
+  stack_id: z.number().describe("Stack ID"),
+  environment_id: z.number().describe("Portainer environment ID"),
+  compose_content: z.string().optional().describe("New Docker Compose YAML content"),
+  env: z.array(z.object({
+    name: z.string(),
+    value: z.string(),
+  })).optional().describe("Environment variables for the stack"),
+  prune: z.boolean().optional().describe("Prune services that are no longer referenced"),
+  pull_image: z.boolean().optional().describe("Pull latest image versions"),
+});
+
+export const RedeployStackSchema = z.object({
+  stack_id: z.number().describe("Stack ID"),
+  environment_id: z.number().describe("Portainer environment ID"),
+  pull_image: z.boolean().optional().describe("Pull latest image versions"),
+});
+
+export const ContainerStatsSchema = z.object({
+  environment_id: z.number().describe("Portainer environment ID"),
+  container_id: z.string().describe("Container ID or name"),
+});
+
 export const EnvironmentIdSchema = z.object({
   environment_id: z.number().describe("Portainer environment ID"),
 });

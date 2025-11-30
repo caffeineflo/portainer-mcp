@@ -63,6 +63,18 @@ export const containerTools: Tool[] = [
       required: ["environment_id", "container_id", "action"],
     },
   },
+  {
+    name: "container_stats",
+    description: "Get CPU, memory, and network statistics for a container",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        environment_id: { type: "number", description: "Portainer environment ID" },
+        container_id: { type: "string", description: "Container ID or name" },
+      },
+      required: ["environment_id", "container_id"],
+    },
+  },
 ];
 
 export const stackTools: Tool[] = [
@@ -124,6 +136,46 @@ export const stackTools: Tool[] = [
         },
       },
       required: ["environment_id", "name", "compose_content"],
+    },
+  },
+  {
+    name: "update_stack",
+    description: "Update an existing stack (compose content, env vars, etc). Requires PORTAINER_WRITE_ENABLED=true",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        stack_id: { type: "number", description: "Stack ID" },
+        environment_id: { type: "number", description: "Portainer environment ID" },
+        compose_content: { type: "string", description: "New Docker Compose YAML content" },
+        env: {
+          type: "array",
+          description: "Environment variables for the stack",
+          items: {
+            type: "object",
+            properties: {
+              name: { type: "string", description: "Variable name" },
+              value: { type: "string", description: "Variable value" },
+            },
+            required: ["name", "value"],
+          },
+        },
+        prune: { type: "boolean", description: "Prune services no longer referenced" },
+        pull_image: { type: "boolean", description: "Pull latest image versions" },
+      },
+      required: ["stack_id", "environment_id"],
+    },
+  },
+  {
+    name: "redeploy_stack",
+    description: "Redeploy a git-based stack from its repository. Requires PORTAINER_WRITE_ENABLED=true",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        stack_id: { type: "number", description: "Stack ID" },
+        environment_id: { type: "number", description: "Portainer environment ID" },
+        pull_image: { type: "boolean", description: "Pull latest image versions" },
+      },
+      required: ["stack_id", "environment_id"],
     },
   },
 ];

@@ -64,6 +64,12 @@ export interface PortainerStack {
   Status: number;
   CreationDate: number;
   UpdateDate: number;
+  Env?: Array<{ name: string; value: string }>;
+  GitConfig?: {
+    URL: string;
+    ReferenceName: string;
+    ConfigFilePath: string;
+  };
 }
 
 export interface PortainerStackFile {
@@ -96,6 +102,31 @@ export interface DockerNetwork {
       Gateway?: string;
     }>;
   };
+}
+
+export interface DockerContainerStats {
+  read: string;
+  cpu_stats: {
+    cpu_usage: {
+      total_usage: number;
+    };
+    system_cpu_usage: number;
+    online_cpus: number;
+  };
+  precpu_stats: {
+    cpu_usage: {
+      total_usage: number;
+    };
+    system_cpu_usage: number;
+  };
+  memory_stats: {
+    usage: number;
+    limit: number;
+  };
+  networks?: Record<string, {
+    rx_bytes: number;
+    tx_bytes: number;
+  }>;
 }
 
 export interface PortainerError {

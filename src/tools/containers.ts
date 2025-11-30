@@ -4,6 +4,7 @@ import {
   InspectContainerSchema,
   ContainerLogsSchema,
   ContainerActionSchema,
+  ContainerStatsSchema,
 } from "../schemas.js";
 import { formatResponse, type ToolResponse } from "./utils.js";
 
@@ -78,5 +79,45 @@ export async function containerAction(
   return formatResponse({
     success: true,
     message: `Container ${parsed.action} completed`,
+  });
+}
+
+export async function containerStats(
+  client: PortainerClient,
+  args: unknown
+): Promise<ToolResponse> {
+  const parsed = ContainerStatsSchema.parse(args);
+  const stats = await client.getContainerStats(
+    parsed.environment_id,
+    parsed.container_id
+  );
+
+  // Calculate CPU percentage
+  const cpuDelta = stats.cpu_stats.cpu_usage.total_usage - stats.precpu_stats.cpu_usage.total_usage;
+  const systemDelta = stats.cpu_stats.system_cpu_usage - stats.precpu_stats.system_cpu_usage;
+  const cpuPercent = systemDelta > 0 ? (cpuDelta / systemDelta) * stats.cpu_stats.online_cpus * 100 : 0;
+
+  // Calculate memory percentage
+  const memoryUsage = stats.memory_stats.usage;
+  const memoryLimit = stats.memory_stats.limit;
+  const memoryPercent = memoryLimit > 0 ? (memoryUsage / memoryLimit) * 100 : 0;
+
+  // Sum network I/O
+  let networkRx = 0;
+  let networkTx = 0;
+  if (stats.networks) {
+    for (const net of Object.values(stats.networks)) {
+      networkRx += net.rx_bytes;
+      networkTx += net.tx_bytes;
+    }
+  }
+
+  return formatResponse({
+    cpu_percent: Math.round(cpuPercent * 100) / 100,
+    memory_usage_mb: Math.round(memoryUsage / 1024 / 1024 * 100) / 100,
+    memory_limit_mb: Math.round(memoryLimit / 1024 / 1024 * 100) / 100,
+    memory_percent: Math.round(memoryPercent * 100) / 100,
+    network_rx_mb: Math.round(networkRx / 1024 / 1024 * 100) / 100,
+    network_tx_mb: Math.round(networkTx / 1024 / 1024 * 100) / 100,
   });
 }
