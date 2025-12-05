@@ -430,8 +430,13 @@ export class PortainerClient {
     return this.request<PortainerRegistry[]>("GET", "/registries");
   }
 
-  // Stack by name
+  // Stack by name (no direct API endpoint, so we filter from list)
   async getStackByName(name: string): Promise<PortainerStack> {
-    return this.request<PortainerStack>("GET", `/stacks/name/${encodeURIComponent(name)}`);
+    const stacks = await this.getStacks();
+    const stack = stacks.find((s) => s.Name === name);
+    if (!stack) {
+      throw new PortainerClientError(`Stack not found: ${name}`, "NOT_FOUND", 404);
+    }
+    return stack;
   }
 }
