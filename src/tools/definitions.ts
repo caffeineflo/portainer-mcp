@@ -3,7 +3,7 @@ import type { Tool } from "@modelcontextprotocol/sdk/types.js";
 export const environmentTools: Tool[] = [
   {
     name: "list_environments",
-    description: "List all Portainer environments (Docker endpoints)",
+    description: "List all Portainer environments (Docker endpoints). Returns ID, name, status (up/down), type (docker/swarm), and URL for each environment. Use this first to get environment IDs needed for other tools.",
     inputSchema: {
       type: "object" as const,
       properties: {},
@@ -12,11 +12,11 @@ export const environmentTools: Tool[] = [
   },
   {
     name: "environment_dashboard",
-    description: "Get dashboard overview for an environment (container counts, image stats, etc)",
+    description: "Get a quick overview of an environment: container counts (running/stopped/healthy/unhealthy), total images and disk usage, volume count, network count, and stack count. Useful for health checks.",
     inputSchema: {
       type: "object" as const,
       properties: {
-        environment_id: { type: "number", description: "Portainer environment ID" },
+        environment_id: { type: "number", description: "Portainer environment ID (get from list_environments)" },
       },
       required: ["environment_id"],
     },
@@ -26,57 +26,57 @@ export const environmentTools: Tool[] = [
 export const containerTools: Tool[] = [
   {
     name: "list_containers",
-    description: "List containers in a Portainer environment",
+    description: "List containers in an environment. By default only shows running containers. Returns ID, name, image, state, status, and exposed ports.",
     inputSchema: {
       type: "object" as const,
       properties: {
-        environment_id: { type: "number", description: "Portainer environment ID" },
-        all: { type: "boolean", description: "Include stopped containers" },
+        environment_id: { type: "number", description: "Portainer environment ID (get from list_environments)" },
+        all: { type: "boolean", description: "Include stopped containers (default: false, only running)" },
       },
       required: ["environment_id"],
     },
   },
   {
     name: "inspect_container",
-    description: "Get detailed information about a container",
+    description: "Get detailed container info: full config, environment variables, labels, network settings (IPs, gateways), mount points, and current state.",
     inputSchema: {
       type: "object" as const,
       properties: {
         environment_id: { type: "number", description: "Portainer environment ID" },
-        container_id: { type: "string", description: "Container ID or name" },
+        container_id: { type: "string", description: "Container ID (short or full) or container name" },
       },
       required: ["environment_id", "container_id"],
     },
   },
   {
     name: "container_logs",
-    description: "Get logs from a container",
+    description: "Get recent logs from a container. Returns combined stdout/stderr output.",
     inputSchema: {
       type: "object" as const,
       properties: {
         environment_id: { type: "number", description: "Portainer environment ID" },
         container_id: { type: "string", description: "Container ID or name" },
-        tail: { type: "number", description: "Number of lines (default 100, max 10000)" },
+        tail: { type: "number", description: "Number of lines from end (default: 100, max: 10000)" },
       },
       required: ["environment_id", "container_id"],
     },
   },
   {
     name: "container_action",
-    description: "Perform an action on a container (start, stop, restart, kill, remove). Requires PORTAINER_WRITE_ENABLED=true",
+    description: "Control a container: start, stop, restart, kill, or remove it. Requires PORTAINER_WRITE_ENABLED=true.",
     inputSchema: {
       type: "object" as const,
       properties: {
         environment_id: { type: "number", description: "Portainer environment ID" },
         container_id: { type: "string", description: "Container ID or name" },
-        action: { type: "string", enum: ["start", "stop", "restart", "kill", "remove"], description: "Action to perform" },
+        action: { type: "string", enum: ["start", "stop", "restart", "kill", "remove"], description: "start=run stopped container, stop=graceful shutdown, restart=stop+start, kill=force stop, remove=delete container" },
       },
       required: ["environment_id", "container_id", "action"],
     },
   },
   {
     name: "container_stats",
-    description: "Get CPU, memory, and network statistics for a container",
+    description: "Get real-time resource usage: CPU %, memory usage/limit/%, and network I/O. This is a point-in-time snapshot.",
     inputSchema: {
       type: "object" as const,
       properties: {
@@ -91,34 +91,34 @@ export const containerTools: Tool[] = [
 export const stackTools: Tool[] = [
   {
     name: "list_stacks",
-    description: "List all stacks",
+    description: "List all Docker Compose stacks. Returns ID, name, status (active/inactive), and environment ID for each stack.",
     inputSchema: {
       type: "object" as const,
       properties: {
-        environment_id: { type: "number", description: "Filter by environment ID" },
+        environment_id: { type: "number", description: "Filter to only show stacks in this environment (optional)" },
       },
       required: [],
     },
   },
   {
     name: "inspect_stack",
-    description: "Get stack details including compose file content",
+    description: "Get full stack details: compose file content, environment variables, git config (if git-based), status, and environment ID.",
     inputSchema: {
       type: "object" as const,
       properties: {
-        stack_id: { type: "number", description: "Stack ID" },
+        stack_id: { type: "number", description: "Stack ID (get from list_stacks)" },
       },
       required: ["stack_id"],
     },
   },
   {
     name: "stack_action",
-    description: "Perform an action on a stack (start, stop, remove). Requires PORTAINER_WRITE_ENABLED=true",
+    description: "Control a stack: start (deploy), stop (take down), or remove (delete). Requires PORTAINER_WRITE_ENABLED=true.",
     inputSchema: {
       type: "object" as const,
       properties: {
         stack_id: { type: "number", description: "Stack ID" },
-        action: { type: "string", enum: ["start", "stop", "remove"], description: "Action to perform" },
+        action: { type: "string", enum: ["start", "stop", "remove"], description: "start=deploy stack, stop=take down containers, remove=delete stack entirely" },
         environment_id: { type: "number", description: "Required for remove action" },
       },
       required: ["stack_id", "action"],
@@ -126,20 +126,20 @@ export const stackTools: Tool[] = [
   },
   {
     name: "create_stack",
-    description: "Create a new standalone Docker Compose stack. Requires PORTAINER_WRITE_ENABLED=true",
+    description: "Deploy a new Docker Compose stack. Provide compose YAML content and optional environment variables. Requires PORTAINER_WRITE_ENABLED=true.",
     inputSchema: {
       type: "object" as const,
       properties: {
-        environment_id: { type: "number", description: "Portainer environment ID" },
-        name: { type: "string", description: "Stack name" },
-        compose_content: { type: "string", description: "Docker Compose YAML content" },
+        environment_id: { type: "number", description: "Environment to deploy to" },
+        name: { type: "string", description: "Stack name (must be unique)" },
+        compose_content: { type: "string", description: "Docker Compose YAML (version, services, networks, volumes)" },
         env: {
           type: "array",
-          description: "Environment variables for the stack",
+          description: "Environment variables injected into the stack (like .env file). Referenced in compose as ${VAR_NAME}.",
           items: {
             type: "object",
             properties: {
-              name: { type: "string", description: "Variable name" },
+              name: { type: "string", description: "Variable name (e.g., DB_PASSWORD)" },
               value: { type: "string", description: "Variable value" },
             },
             required: ["name", "value"],
@@ -151,16 +151,16 @@ export const stackTools: Tool[] = [
   },
   {
     name: "update_stack",
-    description: "Update an existing stack (compose content, env vars, etc). Requires PORTAINER_WRITE_ENABLED=true",
+    description: "Update a deployed stack: change compose content, environment variables, or redeploy with latest images. Requires PORTAINER_WRITE_ENABLED=true.",
     inputSchema: {
       type: "object" as const,
       properties: {
-        stack_id: { type: "number", description: "Stack ID" },
-        environment_id: { type: "number", description: "Portainer environment ID" },
-        compose_content: { type: "string", description: "New Docker Compose YAML content" },
+        stack_id: { type: "number", description: "Stack ID to update" },
+        environment_id: { type: "number", description: "Environment the stack is in" },
+        compose_content: { type: "string", description: "New Docker Compose YAML content (optional, keeps existing if not provided)" },
         env: {
           type: "array",
-          description: "Environment variables for the stack",
+          description: "New environment variables (replaces existing). Use inspect_stack first to get current values.",
           items: {
             type: "object",
             properties: {
@@ -170,32 +170,32 @@ export const stackTools: Tool[] = [
             required: ["name", "value"],
           },
         },
-        prune: { type: "boolean", description: "Prune services no longer referenced" },
-        pull_image: { type: "boolean", description: "Pull latest image versions" },
+        prune: { type: "boolean", description: "Remove services that are no longer defined in compose file" },
+        pull_image: { type: "boolean", description: "Pull latest versions of all images before deploying" },
       },
       required: ["stack_id", "environment_id"],
     },
   },
   {
     name: "redeploy_stack",
-    description: "Redeploy a git-based stack from its repository. Requires PORTAINER_WRITE_ENABLED=true",
+    description: "Pull latest changes from git and redeploy a git-based stack. Only works for stacks created from a git repository. Requires PORTAINER_WRITE_ENABLED=true.",
     inputSchema: {
       type: "object" as const,
       properties: {
-        stack_id: { type: "number", description: "Stack ID" },
-        environment_id: { type: "number", description: "Portainer environment ID" },
-        pull_image: { type: "boolean", description: "Pull latest image versions" },
+        stack_id: { type: "number", description: "Stack ID (must be a git-based stack)" },
+        environment_id: { type: "number", description: "Environment the stack is in" },
+        pull_image: { type: "boolean", description: "Also pull latest image versions" },
       },
       required: ["stack_id", "environment_id"],
     },
   },
   {
     name: "get_stack_by_name",
-    description: "Get a stack by its name instead of ID",
+    description: "Look up a stack by name instead of ID. Returns same info as inspect_stack: compose content, env vars, git config, status.",
     inputSchema: {
       type: "object" as const,
       properties: {
-        name: { type: "string", description: "Stack name" },
+        name: { type: "string", description: "Exact stack name" },
       },
       required: ["name"],
     },
@@ -205,7 +205,7 @@ export const stackTools: Tool[] = [
 export const imageTools: Tool[] = [
   {
     name: "list_images",
-    description: "List Docker images in an environment",
+    description: "List all Docker images in an environment. Returns ID, tags, size (MB), and creation date.",
     inputSchema: {
       type: "object" as const,
       properties: {
@@ -216,13 +216,13 @@ export const imageTools: Tool[] = [
   },
   {
     name: "manage_image",
-    description: "Pull or remove a Docker image. Requires PORTAINER_WRITE_ENABLED=true",
+    description: "Pull a new image from a registry or remove an existing image. Requires PORTAINER_WRITE_ENABLED=true.",
     inputSchema: {
       type: "object" as const,
       properties: {
         environment_id: { type: "number", description: "Portainer environment ID" },
-        action: { type: "string", enum: ["pull", "remove"], description: "Action to perform" },
-        image: { type: "string", description: "Image name:tag (for pull) or ID (for remove)" },
+        action: { type: "string", enum: ["pull", "remove"], description: "pull=download from registry, remove=delete from host" },
+        image: { type: "string", description: "For pull: image:tag (e.g., nginx:latest). For remove: image ID or name:tag" },
       },
       required: ["environment_id", "action", "image"],
     },
@@ -232,7 +232,7 @@ export const imageTools: Tool[] = [
 export const volumeTools: Tool[] = [
   {
     name: "list_volumes",
-    description: "List Docker volumes in an environment",
+    description: "List Docker volumes in an environment. Returns name, driver, and mount point for each volume.",
     inputSchema: {
       type: "object" as const,
       properties: {
@@ -243,12 +243,12 @@ export const volumeTools: Tool[] = [
   },
   {
     name: "manage_volume",
-    description: "Create or remove a Docker volume. Requires PORTAINER_WRITE_ENABLED=true",
+    description: "Create a new volume or remove an existing one. Requires PORTAINER_WRITE_ENABLED=true.",
     inputSchema: {
       type: "object" as const,
       properties: {
         environment_id: { type: "number", description: "Portainer environment ID" },
-        action: { type: "string", enum: ["create", "remove"], description: "Action to perform" },
+        action: { type: "string", enum: ["create", "remove"], description: "create=new volume, remove=delete volume (fails if in use)" },
         name: { type: "string", description: "Volume name" },
       },
       required: ["environment_id", "action", "name"],
@@ -259,7 +259,7 @@ export const volumeTools: Tool[] = [
 export const networkTools: Tool[] = [
   {
     name: "list_networks",
-    description: "List Docker networks in an environment",
+    description: "List Docker networks in an environment. Returns ID, name, driver, scope, and subnet for each network.",
     inputSchema: {
       type: "object" as const,
       properties: {
@@ -270,14 +270,14 @@ export const networkTools: Tool[] = [
   },
   {
     name: "manage_network",
-    description: "Create or remove a Docker network. Requires PORTAINER_WRITE_ENABLED=true",
+    description: "Create a new network or remove an existing one. Requires PORTAINER_WRITE_ENABLED=true.",
     inputSchema: {
       type: "object" as const,
       properties: {
         environment_id: { type: "number", description: "Portainer environment ID" },
-        action: { type: "string", enum: ["create", "remove"], description: "Action to perform" },
-        name: { type: "string", description: "Network name (for create) or ID (for remove)" },
-        subnet: { type: "string", description: "CIDR subnet for create (e.g., 172.20.0.0/16)" },
+        action: { type: "string", enum: ["create", "remove"], description: "create=new network, remove=delete network (fails if in use)" },
+        name: { type: "string", description: "For create: network name. For remove: network name or ID" },
+        subnet: { type: "string", description: "For create only: CIDR subnet (e.g., 172.20.0.0/16). Optional - Docker assigns one if not specified." },
       },
       required: ["environment_id", "action", "name"],
     },
@@ -287,7 +287,7 @@ export const networkTools: Tool[] = [
 export const systemTools: Tool[] = [
   {
     name: "system_info",
-    description: "Get Portainer system info (version, platform, agent counts)",
+    description: "Get Portainer server info: version, edition (CE/EE), platform, update availability, and connected agent counts.",
     inputSchema: {
       type: "object" as const,
       properties: {},
@@ -296,7 +296,7 @@ export const systemTools: Tool[] = [
   },
   {
     name: "list_registries",
-    description: "List configured Docker registries",
+    description: "List configured Docker registries (Docker Hub, GitHub, GitLab, ECR, etc.). Returns name, URL, type, and authentication status.",
     inputSchema: {
       type: "object" as const,
       properties: {},
